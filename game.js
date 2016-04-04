@@ -1,4 +1,4 @@
-(function (StoreManager, Entity, Player) {
+(function (StoreManager, Entity, Player, Background, Text) {
   'use strict';
 
   var Game = {
@@ -15,7 +15,7 @@
   Game.defaultEntityHeight = 0.1 * Game.canvas.height;
   Game.horizontalPadding = 0.05 * Game.canvas.width;
   Game.laneWidth = (Game.canvas.width - 2 * Game.horizontalPadding) / Game.numberOfLanes;
-    
+  
   Game.clear = function () {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   };
@@ -27,9 +27,16 @@
     this.minIndexVisible = 0;
     this.running = true;
     
+    this.background = new Background(0, 0, this.canvas.width, this.canvas.height, 'background.png');
+    
     this.player = new Player(
       this.horizontalPadding + 2 * this.laneWidth, this.canvas.height - this.defaultEntityHeight - 5,
       this.laneWidth, this.defaultEntityHeight, 'red');
+    
+    this.scoreText = new Text(20, 30, '14px Consolas', 'black', 'Score: ' + this.score);
+
+    var highestScore = StoreManager.get('highestScore') || 0;
+    this.highestScoreText = new Text(20, 60, '14px Consolas', 'black', 'Recorde: ' + highestScore);
     
     this.setInitialSpeed();
   };
@@ -39,7 +46,10 @@
     
     this.clear();
 
+    this.background.draw(this.context);
     this.player.draw(this.context);
+    this.scoreText.draw(this.context);
+    this.highestScoreText.draw(this.context);
     for (var i = this.minIndexVisible; i < this.entities.length; i++) {
       this.entities[i].draw(this.context);
     }
@@ -102,7 +112,7 @@
     var highestScore = StoreManager.get('highestScore') || 0;
     StoreManager.put('highestScore', Math.max(highestScore, this.score));
     
-    // TODO: show high score
+    this.highestScoreText.text = 'Recorde: ' + highestScore;
   };
   
   Game.slide = function (e) {
@@ -119,6 +129,8 @@
     
     this.score += evt.score || 100;
     this.minIndexVisible = Math.max(this.minIndexVisible, evt.index || 0);
+    
+    this.scoreText.text = 'Score: ' + this.score;
   };
   
   // add listeners to document instead of window, because events hit document first.
@@ -131,4 +143,4 @@
   document.getElementById('startBtn').addEventListener('click', Game.start.bind(Game), false);
   
   window.Game = Game;
-})(window.StoreManager, window.Entity, window.Player);
+})(window.StoreManager, window.Entity, window.Player, window.Background, window.Text);
