@@ -8,11 +8,16 @@
     this.width = width;
     this.height = height;
     this.color = color;
+    
+    this.score = 100;
   }
 
   Entity.prototype.move = function (canvasWidth, canvasHeight) {
-    this.x += this.speedX;
     this.y += this.speedY;
+    
+    if (this.y > canvasHeight) {
+      this.emitEvent('entityIsGone', { index: this.index, score: this.score });
+    }
   };
 
   Entity.prototype.draw = function (ctx) {
@@ -46,20 +51,15 @@
     this.emitEvent('stop');
   };
   
-  Entity.prototype.emitEvent = function (eventName, details) {
-    var event = new Event(eventName, details);
+  Entity.prototype.emitEvent = function (eventName, detail) {
+    var event = new CustomEvent(eventName, { detail: detail });
     document.dispatchEvent(event);
-  };
-  
-  Entity.prototype.isGone = function (width, height) {
-    return (this.x < 0 || this.x > width)
-      && (this.y < 0  || this.y > height);
   };
   
   // static properties
   Entity.instances = 0;
   Entity.prototype.speedX = 0;
-  Entity.prototype.speedY = 1;
+  Entity.prototype.speedY = 0;
 
   window.Entity = Entity;
 })();
