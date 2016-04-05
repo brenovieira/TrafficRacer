@@ -11,3 +11,5 @@ Personal prototype of the game Traffic Racer
 
 #Installation
 Run `npm install` to concat and minify js or discomment js script files on `index.html`
+
+[Live Demo](http://brenovieira.github.io/TrafficRacer)
