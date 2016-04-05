@@ -4,11 +4,15 @@
   var LEFT_KEY_CODE = 37,
     RIGHT_KEY_CODE = 39;
   
-  function Player(x, y, width, height, color) {
-    Entity.call(this, x, y, width, height, color);
+  function Player(x, y, width, height, laneWidth) {
+    Entity.call(this, x, y, width, height);
 
     this.speedX = 0;
     this.speedY = 0;
+
+    this.laneWidth = laneWidth;
+    this.image = new Image();
+    this.image.src = 'car_red.png';
 
     document.addEventListener('keydown', this.keyDownHandler.bind(this), false);
     document.addEventListener('keyup', this.keyUpHandler.bind(this), false);
@@ -18,18 +22,24 @@
   Player.prototype.constructor = Player;
   Player.prototype.parent = Entity.prototype;
 
-  Player.prototype.move = function (canvasWidth, canvasHeight) {
-    if ((this.x + this.speedX < 0) || (this.x + this.width + this.speedX > canvasWidth))
+  Player.prototype.move = function (initX, finalX, height) {
+    if ((this.x + this.speedX < initX) || (this.x + this.width + this.speedX > finalX))
       return;
     
     this.x += this.speedX;
   };
+  
+  Player.prototype.draw = function (ctx) {
+     ctx.drawImage(this.image, 
+      this.x, this.y,
+      this.width, this.height);
+  };
 
   Player.prototype.keyDownHandler = function (e) {
     if (e.keyCode == LEFT_KEY_CODE) {
-      this.speedX = -0.25 * this.width;
+      this.speedX = -0.25 * this.laneWidth;
     } else if (e.keyCode == RIGHT_KEY_CODE) {
-      this.speedX = 0.25 * this.width;
+      this.speedX = 0.25 * this.laneWidth;
     }
   };
 

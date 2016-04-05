@@ -1,28 +1,27 @@
 (function () {
   'use strict';
 
-  function Entity(x, y, width, height, color) {
-    this.index = Entity.instances++;
+  function Entity(x, y, width, height) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    this.color = color;
-    
-    this.score = 100;
+    this.index = 0;
+    this.score = 0;
+    this.isGone = false;
   }
 
-  Entity.prototype.move = function (canvasWidth, canvasHeight) {
+  Entity.prototype.move = function (initX, finalX, height) {
     this.y += this.speedY;
     
-    if (this.y > canvasHeight) {
+    if (this.y > height && !this.isGone) {
+      this.isGone = true;
       this.emitEvent('entityIsGone', { index: this.index, score: this.score });
     }
   };
 
   Entity.prototype.draw = function (ctx) {
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    throw Error('Draw must be implemented by Entity child');
   };
 
   Entity.prototype.crashWith = function (other) {
@@ -31,11 +30,12 @@
     
     var myPosition = this.getPosition();
     var otherPosition = other.getPosition();
+    var diff = 5;
 
-    return (myPosition.bottom > otherPosition.top)
-      && (myPosition.top < otherPosition.bottom)
-      && (myPosition.right > otherPosition.left)
-      && (myPosition.left < otherPosition.right);
+    return (myPosition.bottom - otherPosition.top > diff)
+      && (otherPosition.bottom - myPosition.top > diff)
+      && (myPosition.right - otherPosition.left > diff)
+      && (otherPosition.right - myPosition.left > diff);
   };
   
   Entity.prototype.getPosition = function () {
@@ -48,7 +48,7 @@
   };
 
   Entity.prototype.crashAction = function () {
-    this.emitEvent('stop');
+    throw Error('CrashAction must be implemented by Entity child');
   };
   
   Entity.prototype.emitEvent = function (eventName, detail) {
@@ -57,7 +57,7 @@
   };
   
   // static properties
-  Entity.instances = 0;
+  Entity.obstacles = 0;
   Entity.prototype.speedX = 0;
   Entity.prototype.speedY = 0;
 

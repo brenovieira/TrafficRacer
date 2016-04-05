@@ -2,10 +2,13 @@
   'use strict';
 
   function Text(x, y, font, color, text) {
-    Entity.call(this, x, y, 0, 0, color);
+    Entity.call(this, x, y, 0, 0);
 
     this.speedX = 0;
     this.speedY = 0;
+    
+    this.font = font;
+    this.color = color;
     this.text = text || '';
   }
 
