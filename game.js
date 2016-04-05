@@ -24,11 +24,16 @@
   };
 
   Game.start = function () {
-    this.entities = [];    
+    this.entities = [];
     this.frame = 0;
     this.score = 0;
     this.minIndexVisible = 0;
     this.running = true;
+    
+    this.validPositions = [];
+    for (var i = 0; i < this.numberOfLanes; i++) {
+      this.validPositions[i] = true;
+    }
     
     this.background = new Background(0, 0, this.canvas.width, this.canvas.height);
     
@@ -89,43 +94,93 @@
       || ((this.frame / this.numberOfFramesToCreateEntities) % 1 === 0);
   };
   
-  var CAR_YELLOW = 1, CAR_PINK = 2, OIL = 3, HOLE = 4;
   Game.createNewEntities = function () {
-    var typesOfObstacles = 4;
-    var typeOfObstacle = Math.floor(Math.random() * typesOfObstacles) + 1;
-    var lane = Math.floor(Math.random() * this.numberOfLanes);
+    var i,
+      addedLanes = [],
+      numberOfEntitiesToCreate = Math.floor(Math.random() * this.numberOfLanes);
     
-    var obstacle;
-    switch (typeOfObstacle) {
-      case CAR_YELLOW:
-        obstacle = new Car(
-          this.roadInitX + lane * this.laneWidth, -1 * this.entityHeight,
-          this.entityWidth, this.entityHeight, 'car_yellow.png');
-          break;
-          
-      case CAR_PINK:
-        obstacle = new Car(
-          this.roadInitX + lane * this.laneWidth, -1 * this.entityHeight,
-          this.entityWidth, this.entityHeight, 'car_pink.png');
-          break;
-      
-      case OIL:
-        obstacle = new Oil(
-          this.roadInitX + lane * this.laneWidth, -1 * this.entityHeight,
-          this.entityWidth, this.entityHeight);
-          break;
-      
-      case HOLE:
-        obstacle = new Hole(
-          this.roadInitX + lane * this.laneWidth, -1 * this.entityHeight,
-          this.entityWidth, this.entityHeight);
-          break;
-        
-      default:
-        throw Error('Type of Obstacle not implemented');
+    for (i = 0; i < numberOfEntitiesToCreate; i++) {
+      var lane;
+      while(addedLanes[lane = Math.floor(Math.random() * this.numberOfLanes)]);
+      addedLanes[lane] = true;
     }
     
-    this.entities.push(obstacle);
+    // if not a valid configuration, don't add obstacles
+    if (!this.setValidPositions(addedLanes)) {
+      this.validPositions = [];
+      for (i = 0; i < this.numberOfLanes; i++) {
+        this.validPositions[i] = true;
+      }
+      
+      return;
+    }
+    
+    for (i = 0; i < addedLanes.length; i++) {
+      if (!addedLanes[i]) continue;
+      
+      var obstacle = this.createNewEntity(
+        this.roadInitX + i * this.laneWidth, -1 * this.entityHeight,
+        this.entityWidth, this.entityHeight);
+      
+      this.entities.push(obstacle);
+    }
+  };
+  
+  var CAR_YELLOW = 1, CAR_PINK = 2, OIL = 3, HOLE = 4;
+  Game.createNewEntity = function (x, y, width, height) {
+    var typesOfObstacles = 4;
+    var typeOfObstacle = Math.floor(Math.random() * typesOfObstacles) + 1;
+    
+    switch (typeOfObstacle) {
+      case CAR_YELLOW: return new Car(x, y, width, height, 'car_yellow.png');
+      case CAR_PINK: return new Car(x, y, width, height, 'car_pink.png');      
+      case OIL: return new Oil(x, y, width, height);
+      case HOLE: return new Hole(x, y, width, height);
+      default: throw Error('Type of Obstacle not implemented');
+    }
+  };
+
+  /**
+   * assuming that the player can go all the way
+   * from the left to the right or vice versa real quick,
+   * we can just look to the last possible positions
+   * to find the next possible positions without crashing.
+   * i.e.,
+   * being 'o' an empty position and 'x' a filled position,
+   * the following configuration is valid:
+   * x x x o     <- next positions (what we're creating)
+   * o o o o     <- last positions (what we've created last)
+   * o x x x
+   */
+  Game.setValidPositions = function (obstaclesLanes) {
+    var newValidPositions = [],
+      valid = false;
+    
+    for (var i = 0; i < this.numberOfLanes; i++) {
+      newValidPositions[i] = this.getNewValidPosition(i, obstaclesLanes);
+      
+      if (newValidPositions[i])
+        valid = true;
+    }
+    
+    this.validPositions = newValidPositions;
+    return valid;
+  };
+  
+  Game.getNewValidPosition = function (lane, obstaclesLanes) {
+    // if there is an obstacle, it won't be a valid position
+    if (obstaclesLanes[lane]) return false;
+    
+    // if there isn't an obstacle and it was a valid position before,
+    // it will continue being a valid position
+    if (this.validPositions[lane]) return true;
+    
+    // if it wasn't a valid position before,
+    // it will depend on next lane being valid.
+    // if it is the last lane, it is invalid.
+    if (lane === this.numberOfLanes - 1) return false;
+    
+    return Game.getNewValidPosition(lane + 1, obstaclesLanes);
   };
   
   Game.shouldIncreaseSpeed = function () {
