@@ -41,7 +41,7 @@
     var highestScore = StoreManager.get('highestScore') || 0;
     this.highestScoreText = new Text(600, 60, '20px Consolas', 'black', 'Recorde: ' + highestScore);
     
-    this.setInitialSpeed();
+    this.resetEntity();
   };
 
   Game.draw = function () {
@@ -89,12 +89,43 @@
       || ((this.frame / this.numberOfFramesToCreateEntities) % 1 === 0);
   };
   
+  var CAR_YELLOW = 1, CAR_PINK = 2, OIL = 3, HOLE = 4;
   Game.createNewEntities = function () {
-    var lane = Math.floor(Math.random() * this.numberOfLanes); // lanes 0, 1, ...
+    var typesOfObstacles = 4;
+    var typeOfObstacle = Math.floor(Math.random() * typesOfObstacles) + 1;
+    var lane = Math.floor(Math.random() * this.numberOfLanes);
     
-    this.entities.push(new Car(
-      this.roadInitX + lane * this.laneWidth, -1 * this.entityHeight,
-      this.entityWidth, this.entityHeight, 'car_yellow.png'));
+    var obstacle;
+    switch (typeOfObstacle) {
+      case CAR_YELLOW:
+        obstacle = new Car(
+          this.roadInitX + lane * this.laneWidth, -1 * this.entityHeight,
+          this.entityWidth, this.entityHeight, 'car_yellow.png');
+          break;
+          
+      case CAR_PINK:
+        obstacle = new Car(
+          this.roadInitX + lane * this.laneWidth, -1 * this.entityHeight,
+          this.entityWidth, this.entityHeight, 'car_pink.png');
+          break;
+      
+      case OIL:
+        obstacle = new Oil(
+          this.roadInitX + lane * this.laneWidth, -1 * this.entityHeight,
+          this.entityWidth, this.entityHeight);
+          break;
+      
+      case HOLE:
+        obstacle = new Hole(
+          this.roadInitX + lane * this.laneWidth, -1 * this.entityHeight,
+          this.entityWidth, this.entityHeight);
+          break;
+        
+      default:
+        throw Error('Type of Obstacle not implemented');
+    }
+    
+    this.entities.push(obstacle);
   };
   
   Game.shouldIncreaseSpeed = function () {
@@ -105,8 +136,9 @@
     Entity.prototype.speedY *= (1 + this.percentageToIncreaseSpeed);
   };
   
-  Game.setInitialSpeed = function () {
+  Game.resetEntity = function () {
     Entity.prototype.speedY = this.initialSpeedY;
+    Entity.obstacles = 0;
   };
   
   Game.stop = function (e) {
@@ -119,15 +151,13 @@
   };
   
   Game.slide = function (e) {
-    var dx = 0.5 * this.laneWidth;
-    
-    if (this.player.x + dx > this.canvas.width)
-      this.player.x -= dx;
+    if (this.player.x + this.player.width + this.laneWidth > this.roadFinalX)
+      this.player.x -= this.laneWidth;
     else
-      this.player.x += dx;
+      this.player.x += this.laneWidth;
   };
   
-  Game.loseScore = function (params) {
+  Game.loseScore = function (e) {
     this.score -= 1000;
   };
   
