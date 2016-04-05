@@ -1,0 +1,18 @@
+{
+  "name": "traffic-racer",
+  "author": "brenovieira <genghislabs@gmail.com>",
+  "homepage": "https://github.com/brenovieira/TrafficRacer",
+  "repository": {
+    "url": "git://github.com/brenovieira/TrafficRacer.git"
+  },
+  "version": "1.0.0",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-rev": "^6.0.1",
+    "gulp-rev-replace": "^0.4.3",
+    "gulp-uglify": "^1.5.3",
+    "rev-del": "^1.0.5"
+  },
+  "license": "MIT"
+}
