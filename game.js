@@ -3,11 +3,11 @@
 
   var Game = {
     fps: 30,
-    initialSpeedY: 4,
-    numberOfFramesToCreateEntities: 25,
-    numberOfFramesToIncreaseSpeed: 200,
+    initialSpeedY: 6,
+    numberOfFramesToCreateEntities: 15,
+    numberOfFramesToIncreaseSpeed: 120,
     numberOfLanes: 4,
-    percentageToIncreaseSpeed: 0.1,
+    percentageToIncreaseSpeed: 0.15,
     running: false,
     canvas: document.getElementById('canvas'),
     roadInitX: 230,
@@ -41,6 +41,7 @@
       this.roadInitX + 2 * this.laneWidth, this.canvas.height - this.entityHeight,
       this.entityWidth, this.entityHeight, this.laneWidth);
     
+    this.gameOverText = null;
     this.scoreText = new Text(600, 30, '20px Consolas', 'black', 'Score: ' + this.score);
 
     var highestScore = StoreManager.get('highestScore') || 0;
@@ -50,7 +51,17 @@
   };
 
   Game.draw = function () {
-    if (!this.running) return;
+    if (!this.running) {
+      if (!this.gameOverText) {
+        this.gameOverText = new Text(
+          0.5 * (this.roadInitX + this.roadFinalX), 0.5 * this.canvas.height,
+          '40px Consolas', 'red', 'Game Over');
+          
+        this.gameOverText.draw(this.context);
+      }
+      
+      return; 
+    }
     
     this.clear();
 
